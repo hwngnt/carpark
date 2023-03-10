@@ -1,6 +1,7 @@
 package com.example.car_park.controller;
 
 import com.example.car_park.entities.Employee;
+import com.example.car_park.entities.dto.CarDTO;
 import com.example.car_park.entities.dto.EmployeeDTO;
 import com.example.car_park.service.EmployeeService;
 import jakarta.validation.Valid;
@@ -58,18 +59,11 @@ public class EmployeeController {
         return employeeService.deleteById(id);
     }
 
-    @GetMapping("/page")
-    public List<EmployeeDTO> selectEmployeeWithOffsetAndLimit(@RequestParam int page, @RequestParam int limit){
-        return employeeService.getPage(page, limit);
-    }
-
-    @GetMapping("/selectByParam")
-    public List<EmployeeDTO> selectEmployeByParam(@RequestParam String param, @RequestParam String order){
-        return employeeService.sortPage(param, order);
-    }
-
     @GetMapping("/filter")
-    public List<EmployeeDTO> filter(@RequestParam String column, @RequestParam String param){
-        return employeeService.filter(column, param);
+    public List<EmployeeDTO> filter(@RequestParam(name = "offset", defaultValue = "0", required = true) int offset,
+                               @RequestParam(name = "limit", defaultValue = "2", required = true) int limit,
+                               @RequestParam(name = "searchField", defaultValue = "account", required = true) String field,
+                               @RequestParam(name = "searchValue", defaultValue = "%%", required = false) String searchName){
+        return employeeService.getAllEmployees("%"+searchName+"%", field, offset, limit);
     }
 }

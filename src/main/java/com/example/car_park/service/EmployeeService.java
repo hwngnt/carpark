@@ -1,12 +1,16 @@
 package com.example.car_park.service;
 
+import com.example.car_park.entities.Car;
 import com.example.car_park.entities.Employee;
+import com.example.car_park.entities.dto.CarDTO;
 import com.example.car_park.entities.dto.EmployeeDTO;
 import com.example.car_park.exception.DuplicatedAccountException;
 import com.example.car_park.exception.DuplicatedEmailException;
 import com.example.car_park.exception.DuplicatedPhoneException;
 import com.example.car_park.exception.NotFoundException;
 import com.example.car_park.repository.EmployeeRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +25,9 @@ import java.util.Optional;
 public class EmployeeService {
     @Autowired
     private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private EntityManager em;
 
     // Add Employee mới
     public EmployeeDTO addEmployee(Employee employee){
@@ -114,28 +121,17 @@ public class EmployeeService {
         }
     }
 
-    public List<EmployeeDTO> getPage(int page, int limit){
-        List<Employee> listEmployees = employeeRepository.findAllEmployee(page, limit);
-        List<EmployeeDTO> employeeDTOS = new ArrayList<>();
-        for(Employee e : listEmployees){
-            employeeDTOS.add(new EmployeeDTO(e));
-        }
-        return employeeDTOS;
-    }
+    public List<EmployeeDTO> getAllEmployees(String searchName, String field, int offset, int limit) {
+        String sql = "select e from Employee e where " + field + " like :search";
+        StringBuilder query = new StringBuilder(sql);
 
-    public List<EmployeeDTO> sortPage(String param, String order){
-        List<Employee> listEmployees = employeeRepository.findAllEmployeeByParam(param, order);
+        TypedQuery<Employee> employees = em.createQuery(query.toString(), Employee.class);
+        employees.setParameter("search", searchName);
+        employees.setFirstResult(offset);
+        employees.setMaxResults(limit);
+        List<Employee> emList = employees.getResultList();
         List<EmployeeDTO> employeeDTOS = new ArrayList<>();
-        for(Employee e : listEmployees){
-            employeeDTOS.add(new EmployeeDTO(e));
-        }
-        return employeeDTOS;
-    }
-
-    public List<EmployeeDTO> filter(String column, String param){
-        List<Employee> listEmployees = employeeRepository.filterByParam(column, param);
-        List<EmployeeDTO> employeeDTOS = new ArrayList<>();
-        for(Employee e : listEmployees){
+        for (Employee e : emList) {
             employeeDTOS.add(new EmployeeDTO(e));
         }
         return employeeDTOS;

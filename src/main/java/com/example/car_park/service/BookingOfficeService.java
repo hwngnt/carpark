@@ -1,9 +1,13 @@
 package com.example.car_park.service;
 
 import com.example.car_park.entities.BookingOffice;
+import com.example.car_park.entities.Car;
 import com.example.car_park.entities.dto.BookingOfficeDTO;
+import com.example.car_park.entities.dto.CarDTO;
 import com.example.car_park.exception.NotFoundException;
 import com.example.car_park.repository.BookingOfficeRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +19,8 @@ import java.util.Optional;
 public class BookingOfficeService {
     @Autowired
     private BookingOfficeRepository bookingOfficeRepository;
-
+    @Autowired
+    private EntityManager em;
     @Autowired
     private TripService tripService;
 
@@ -53,5 +58,21 @@ public class BookingOfficeService {
     public String deleteBookingOffice(long id){
         bookingOfficeRepository.deleteById(id);
         return "Deleted";
+    }
+
+    public List<BookingOfficeDTO> getAllBookingOffice(String searchName, String field, int offset, int limit) {
+        String sql = "select b from BookingOffice b where " + field + " like :search";
+        StringBuilder query = new StringBuilder(sql);
+
+        TypedQuery<BookingOffice> bookingOfficeTypedQuery = em.createQuery(query.toString(), BookingOffice.class);
+        bookingOfficeTypedQuery.setParameter("search", searchName);
+        bookingOfficeTypedQuery.setFirstResult(offset);
+        bookingOfficeTypedQuery.setMaxResults(limit);
+        List<BookingOffice> bookingOffices = bookingOfficeTypedQuery.getResultList();
+        List<BookingOfficeDTO> bookingOfficeDTOS = new ArrayList<>();
+        for(BookingOffice b : bookingOffices){
+            bookingOfficeDTOS.add(new BookingOfficeDTO(b));
+        }
+        return  bookingOfficeDTOS;
     }
 }

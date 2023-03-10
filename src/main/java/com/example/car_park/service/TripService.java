@@ -1,9 +1,13 @@
 package com.example.car_park.service;
 
+import com.example.car_park.entities.Employee;
 import com.example.car_park.entities.Trip;
+import com.example.car_park.entities.dto.EmployeeDTO;
 import com.example.car_park.entities.dto.TripDTO;
 import com.example.car_park.exception.NotFoundException;
 import com.example.car_park.repository.TripRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +19,9 @@ import java.util.Optional;
 public class TripService {
     @Autowired
     private TripRepository tripRepository;
+
+    @Autowired
+    private EntityManager em;
 
     public List<TripDTO> selectAllTrip(){
         List<Trip> trips = tripRepository.findAll();
@@ -51,5 +58,21 @@ public class TripService {
     public String deleteTrip(long id){
         tripRepository.deleteById(id);
         return "Deleted";
+    }
+
+    public List<TripDTO> getAllTrips(String searchName, String field, int offset, int limit) {
+        String sql = "select t from Trip t where " + field + " like :search";
+        StringBuilder query = new StringBuilder(sql);
+
+        TypedQuery<Trip> tripTypedQuery = em.createQuery(query.toString(), Trip.class);
+        tripTypedQuery.setParameter("search", searchName);
+        tripTypedQuery.setFirstResult(offset);
+        tripTypedQuery.setMaxResults(limit);
+        List<Trip> trips = tripTypedQuery.getResultList();
+        List<TripDTO> tripDTOS = new ArrayList<>();
+        for (Trip t : trips) {
+            tripDTOS.add(new TripDTO(t));
+        }
+        return tripDTOS;
     }
 }

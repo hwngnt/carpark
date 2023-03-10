@@ -1,9 +1,13 @@
 package com.example.car_park.service;
 
+import com.example.car_park.entities.Car;
 import com.example.car_park.entities.Parkinglot;
+import com.example.car_park.entities.dto.CarDTO;
 import com.example.car_park.entities.dto.ParkinglotDTO;
 import com.example.car_park.exception.NotFoundException;
 import com.example.car_park.repository.ParkinglotRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +22,9 @@ import java.util.Optional;
 public class ParkinglotService {
     @Autowired
     private ParkinglotRepository parkinglotRepository;
+
+    @Autowired
+    private EntityManager em;
 
     //Select all parking lot
     public List<ParkinglotDTO> selectAllParkingLot(){
@@ -59,5 +66,21 @@ public class ParkinglotService {
     public String deleteParkinglot(long id){
         parkinglotRepository.deleteById(id);
         return "Deleted";
+    }
+
+    public List<ParkinglotDTO> getAllParkinglot(String searchName, String field, int offset, int limit) {
+        String sql = "select p from Parkinglot p where " + field + " like :search";
+        StringBuilder query = new StringBuilder(sql);
+
+        TypedQuery<Parkinglot> parkinglotTypedQuery = em.createQuery(query.toString(), Parkinglot.class);
+        parkinglotTypedQuery.setParameter("search", searchName);
+        parkinglotTypedQuery.setFirstResult(offset);
+        parkinglotTypedQuery.setMaxResults(limit);
+        List<Parkinglot> parkinglots = parkinglotTypedQuery.getResultList();
+        List<ParkinglotDTO> parkinglotDTOS = new ArrayList<>();
+        for(Parkinglot p : parkinglots){
+            parkinglotDTOS.add(new ParkinglotDTO(p));
+        }
+        return  parkinglotDTOS;
     }
 }

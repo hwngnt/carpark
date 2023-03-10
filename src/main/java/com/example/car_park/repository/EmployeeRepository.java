@@ -39,13 +39,4 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     int myUpdateFunction(String address, Date birthDate, String email,
                               String name, String phone, String account, String department,
                               String password, String sex, long id);
-
-    @Query(value = "SELECT * FROM employee LIMIT ?1, ?2", nativeQuery = true)
-    List<Employee> findAllEmployee(int page, int limit);
-
-    @Query(value = "SELECT * FROM employee ORDER BY ?1 ?2", nativeQuery = true)
-    List<Employee> findAllEmployeeByParam(String param, String order);
-
-    @Query(value = "SELECT * FROM employee WHERE ?1 LIKE ?2", nativeQuery = true)
-    List<Employee> filterByParam(String column, String param);
 }

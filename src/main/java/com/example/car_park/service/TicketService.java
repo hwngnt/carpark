@@ -2,9 +2,12 @@ package com.example.car_park.service;
 
 import com.example.car_park.entities.Car;
 import com.example.car_park.entities.Ticket;
+import com.example.car_park.entities.dto.CarDTO;
 import com.example.car_park.entities.dto.TicketDTO;
 import com.example.car_park.exception.NotFoundException;
 import com.example.car_park.repository.TicketRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +26,9 @@ public class TicketService {
 
     @Autowired
     private CarService carService;
+
+    @Autowired
+    private EntityManager em;
 
     // Select all
     public List<TicketDTO> selectAllTicket(){
@@ -66,5 +72,21 @@ public class TicketService {
         } else {
             throw new NotFoundException("Ticket not found");
         }
+    }
+
+    public List<TicketDTO> getAllTicket(String searchName, String field, int offset, int limit) {
+        String sql = "select t from Ticket t where " + field + " like :search";
+        StringBuilder query = new StringBuilder(sql);
+
+        TypedQuery<Ticket> ticketTypedQuery = em.createQuery(query.toString(), Ticket.class);
+        ticketTypedQuery.setParameter("search", searchName);
+        ticketTypedQuery.setFirstResult(offset);
+        ticketTypedQuery.setMaxResults(limit);
+        List<Ticket> tickets = ticketTypedQuery.getResultList();
+        List<TicketDTO> ticketDTOS = new ArrayList<>();
+        for(Ticket t : tickets){
+            ticketDTOS.add(new TicketDTO(t));
+        }
+        return  ticketDTOS;
     }
 }

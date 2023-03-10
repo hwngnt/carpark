@@ -1,6 +1,7 @@
 package com.example.car_park.controller;
 
 import com.example.car_park.entities.Parkinglot;
+import com.example.car_park.entities.dto.EmployeeDTO;
 import com.example.car_park.entities.dto.ParkinglotDTO;
 import com.example.car_park.service.ParkinglotService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,5 +36,14 @@ public class ParkinglotController {
     @DeleteMapping("/{id}")
     public String deleteParkinglot(@PathVariable long id){
         return parkinglotService.deleteParkinglot(id);
+    }
+
+
+    @GetMapping("/filter")
+    public List<ParkinglotDTO> filter(@RequestParam(name = "offset", defaultValue = "0", required = true) int offset,
+                                    @RequestParam(name = "limit", defaultValue = "2", required = true) int limit,
+                                    @RequestParam(name = "searchField", defaultValue = "park_name", required = true) String field,
+                                    @RequestParam(name = "searchValue", defaultValue = "%%", required = false) String searchName){
+        return parkinglotService.getAllParkinglot("%"+searchName+"%", field, offset, limit);
     }
 }
